@@ -34,15 +34,17 @@ export interface OrderItem {
 
 export interface DriverProfile {
   id: string;
+  tenantId?: string;
   fullName: string;
-  email: string;
-  phone: string;
-  vehicleType: string;
-  vehiclePlate: string;
+  email?: string;
+  phone?: string | null;
+  vehicleType?: string;
+  vehiclePlate?: string;
   isOnline: boolean;
   currentBalance: number;
   rating: number;
   totalDeliveries: number;
+  avatarUrl?: string | null;
 }
 
 export interface AuthState {

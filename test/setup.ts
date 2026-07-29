@@ -1,5 +1,14 @@
 import { vi } from "vitest";
 
+process.env.EXPO_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
+process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
+
+vi.mock("expo-secure-store", () => ({
+  getItemAsync: vi.fn().mockResolvedValue(null),
+  setItemAsync: vi.fn().mockResolvedValue(undefined),
+  deleteItemAsync: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({
     auth: {
@@ -11,6 +20,8 @@ vi.mock("@supabase/supabase-js", () => ({
       })),
       signInWithPassword: vi.fn(),
       signOut: vi.fn(),
+      startAutoRefresh: vi.fn(),
+      stopAutoRefresh: vi.fn(),
     },
     from: vi.fn(() => ({
       select: vi.fn(() => ({
