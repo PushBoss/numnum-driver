@@ -25,7 +25,7 @@
     "@tanstack/react-query": "^5.40.0",
     "expo": "~54.0.35",
     "expo-auth-session": "~7.0.11",
-    "expo-font": "^57.0.0",
+    "expo-font": "14.0.12",
     "expo-image-picker": "~17.0.11",
     "expo-location": "~19.0.8",
     "expo-secure-store": "~15.0.8",
@@ -47,7 +47,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.0",
-    "babel-preset-expo": "~54.0.12",
     "@expo/ngrok": "^4.1.0",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^12.5.0",
@@ -55,6 +54,7 @@
     "@types/react": "~19.1.10",
     "@vitejs/plugin-react": "^4.7.0",
     "babel-plugin-module-resolver": "^5.0.3",
+    "babel-preset-expo": "~54.0.12",
     "react-test-renderer": "19.1.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
