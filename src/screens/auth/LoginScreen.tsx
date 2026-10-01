@@ -40,8 +40,10 @@ export function LoginScreen() {
 
   if (Platform.OS === "web") return (
     <View style={styles.container}>
-      <BrandMark size={62} />
-      <Text style={styles.subtitle}>DRIVER COMMAND</Text>
+      <BrandMark size={78} />
+      <Text style={styles.subtitle}>DRIVER APP</Text>
+      <Text style={styles.heading}>Ready for your route?</Text>
+      <Text style={styles.description}>Sign in to accept deliveries, navigate to pickup, and complete every handoff.</Text>
       <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -49,6 +51,8 @@ export function LoginScreen() {
           }}
           style={webFormStyle}
         >
+          <Text style={styles.formTitle}>Driver sign in</Text>
+          <Text style={styles.formHint}>Use the phone number and PIN provided by your fleet.</Text>
           <input
             type="tel"
             placeholder="Phone Number"
@@ -80,9 +84,13 @@ export function LoginScreen() {
     <KeyboardAvoidingView style={styles.keyboardArea} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
-          <BrandMark size={62} />
-          <Text style={styles.subtitle}>DRIVER COMMAND</Text>
+          <BrandMark size={78} />
+          <Text style={styles.subtitle}>DRIVER APP</Text>
+          <Text style={styles.heading}>Ready for your route?</Text>
+          <Text style={styles.description}>Sign in to accept deliveries, navigate to pickup, and complete every handoff.</Text>
           <View style={styles.nativeForm}>
+          <Text style={styles.formTitle}>Driver sign in</Text>
+          <Text style={styles.formHint}>Use the phone number and PIN provided by your fleet.</Text>
           <TextInput
             style={styles.input}
             placeholder="Phone Number"
@@ -129,7 +137,7 @@ export function LoginScreen() {
 const webFormStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  width: "100%", maxWidth: 420, backgroundColor: "#15191c", border: "1px solid #3d4840", borderRadius: 12, padding: 24,
+  width: "100%", maxWidth: 420, backgroundColor: "#15191c", border: "1px solid #3d4840", borderRadius: 12, padding: 24, boxSizing: "border-box",
 };
 
 const webInputStyle: CSSProperties = {
@@ -166,8 +174,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.command,
     alignItems: "center",
   },
-  subtitle: { color: colors.textMuted, fontSize: 11, fontWeight: "900", letterSpacing: 2, marginTop: 12, marginBottom: 36 },
+  subtitle: { color: colors.green, fontSize: 11, fontWeight: "900", letterSpacing: 2, marginTop: 12, marginBottom: 14 },
+  heading: { color: colors.text, fontSize: 24, lineHeight: 30, fontWeight: "800", textAlign: "center", marginBottom: 8 },
+  description: { color: colors.textMuted, fontSize: 14, lineHeight: 21, textAlign: "center", maxWidth: 410, marginBottom: 28 },
   nativeForm: { width: "100%", maxWidth: 420, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.outline, borderRadius: 12, padding: 24 },
+  formTitle: { color: colors.text, fontSize: 18, fontWeight: "800", marginBottom: 5 },
+  formHint: { color: colors.textMuted, fontSize: 13, lineHeight: 18, marginBottom: 18 },
   input: {
     height: 48,
     borderWidth: 1,

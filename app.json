@@ -3,8 +3,9 @@
     "name": "NumNum Driver",
     "slug": "num-num-driver",
     "version": "1.0.0",
+    "description": "NumNum delivery driver app for accepting, navigating, and completing assigned deliveries.",
     "orientation": "portrait",
-    "icon": "./src/assets/brand/favicon.png",
+    "icon": "./src/assets/brand/icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
@@ -17,20 +18,31 @@
       "bundleIdentifier": "com.numnum.driver"
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "foregroundImage": "./src/assets/brand/adaptive-icon.png",
         "backgroundColor": "#101614"
       },
-      "package": "com.numnum.driver"
+      "package": "com.mynumnums_driver.app",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
-      "favicon": "./src/assets/brand/favicon.png"
+      "favicon": "./src/assets/brand/icon.png"
     },
     "plugins": [
       "expo-secure-store",
       "expo-location",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0163ac7c-5d66-4124-a523-4205823e924a"
+      }
+    },
+    "owner": "pushtech"
   }
 }
