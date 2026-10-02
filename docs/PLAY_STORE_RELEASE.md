@@ -45,6 +45,23 @@ npx eas-cli env:create --environment production --name EXPO_PUBLIC_MAPS_API_KEY 
 
 ## Build and test
 
+Preview builds need the same Supabase startup variables as production. Expo
+embeds `EXPO_PUBLIC_*` variables in the application bundle; an APK built
+without the two variables below exits before it can render the sign-in screen.
+Create them once in the EAS `preview` environment, using the project's public
+Supabase URL and anon key:
+
+```bash
+npx eas-cli env:create --environment preview --name EXPO_PUBLIC_SUPABASE_URL --value "https://your-project.supabase.co"
+npx eas-cli env:create --environment preview --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "your-anon-key"
+```
+
+Confirm the names are present without printing their values:
+
+```bash
+npx eas-cli env:list preview
+```
+
 Use the preview APK for device testing:
 
 ```bash
