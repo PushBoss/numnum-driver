@@ -19,7 +19,7 @@ module.exports = {
     bundleIdentifier: "com.numnum.driver",
   },
   android: {
-    versionCode: 2,
+    versionCode: 3,
     adaptiveIcon: {
       foregroundImage: "./src/assets/brand/adaptive-icon.png",
       backgroundColor: "#101614",
