@@ -12,6 +12,8 @@ export function DashboardScreen() {
   const { driver, setDriverOnline } = useAuth();
   const [online, setOnline] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<MapPoint | null>(null);
+  const [locationWarning, setLocationWarning] = useState<string | null>(null);
+  const [lastLocationSyncAt, setLastLocationSyncAt] = useState<number | null>(null);
   const watcher = useRef<Location.LocationSubscription | null>(null);
   useEffect(() => () => { watcher.current?.remove(); }, []);
 
@@ -20,10 +22,17 @@ export function DashboardScreen() {
     const permission = await Location.requestForegroundPermissionsAsync();
     if (permission.status !== "granted") { Alert.alert("Location required", "Enable location to go online and receive deliveries."); return; }
     try {
+      setLocationWarning(null);
       const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       setCurrentLocation({ latitude: current.coords.latitude, longitude: current.coords.longitude });
       await recordLocation(current.coords.latitude, current.coords.longitude, current.coords.heading, current.coords.speed);
-      watcher.current = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 15000, distanceInterval: 20 }, ({ coords }) => { setCurrentLocation({ latitude: coords.latitude, longitude: coords.longitude }); void recordLocation(coords.latitude, coords.longitude, coords.heading, coords.speed).catch(() => undefined); });
+      setLastLocationSyncAt(Date.now());
+      watcher.current = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 15000, distanceInterval: 20 }, ({ coords }) => {
+        setCurrentLocation({ latitude: coords.latitude, longitude: coords.longitude });
+        void recordLocation(coords.latitude, coords.longitude, coords.heading, coords.speed)
+          .then(() => { setLastLocationSyncAt(Date.now()); setLocationWarning(null); })
+          .catch(() => setLocationWarning("Location could not reach Fleet Control. Check your connection and keep the app open."));
+      });
       setOnline(true); setDriverOnline(true);
     } catch (error) {
       watcher.current?.remove(); watcher.current = null; setOnline(false); setDriverOnline(false);
@@ -40,7 +49,7 @@ export function DashboardScreen() {
       <View style={styles.mapPanel}><DispatchMap current={currentLocation} /><View style={styles.mapBadge}><View style={[styles.statusDot, styles.statusDotLive]} /><Text style={styles.mapBadgeText}>{currentLocation ? "LIVE LOCATION" : "FLEET COVERAGE"}</Text></View></View>
       <View style={styles.hero}><Text style={styles.heroEyebrow}>FLEET STATUS</Text><Text style={styles.heroTitle}>{online ? "Live dispatch is active" : "Start your delivery shift"}</Text><Text style={styles.heroDetail}>{online ? "Your live location is visible to Fleet Control." : "Go online to share your location and receive new jobs."}</Text><TouchableOpacity style={[styles.shiftButton, online && styles.shiftButtonLive]} onPress={() => void toggleOnline()}><Text style={[styles.shiftButtonText, online && styles.shiftButtonTextLive]}>{online ? "Go offline" : "Go online"}</Text></TouchableOpacity></View>
       <View style={styles.metricRow}><View style={styles.metric}><Text style={styles.metricLabel}>RATING</Text><View style={styles.ratingLine}><StarIcon stroke={colors.green} size={18} strokeWidth={2.6} /><Text style={styles.metricValue}>{rating}</Text></View><Text style={styles.metricNote}>Fleet driver score</Text></View><View style={styles.metric}><Text style={styles.metricLabel}>DELIVERIES</Text><Text style={styles.metricValue}>{driver?.totalDeliveries ?? 0}</Text><Text style={styles.metricNote}>Completed trips</Text></View></View>
-      <View style={styles.infoPanel}><Text style={styles.infoLabel}>LIVE LOCATION</Text><Text style={styles.infoTitle}>Operational location sharing</Text><Text style={styles.infoBody}>This runs only while you are online. Jobs, route progress, and earnings remain linked to your driver account.</Text></View>
+      <View style={styles.infoPanel}><Text style={styles.infoLabel}>LIVE LOCATION</Text><Text style={styles.infoTitle}>{online && lastLocationSyncAt ? "Location shared with Fleet Control" : "Operational location sharing"}</Text><Text style={styles.infoBody}>{locationWarning ?? (online ? "Your location was sent to Fleet Control. Keep this app open while you are available for work." : "Go online to share your location and receive new jobs.")}</Text></View>
       </ScrollView>
     </View>
   );
