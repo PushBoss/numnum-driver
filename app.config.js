@@ -1,0 +1,42 @@
+const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+module.exports = {
+  name: "NumNum Driver",
+  slug: "num-num-driver",
+  version: "1.0.0",
+  description: "NumNum delivery driver app for accepting, navigating, and completing assigned deliveries.",
+  orientation: "portrait",
+  icon: "./src/assets/brand/icon.png",
+  userInterfaceStyle: "dark",
+  newArchEnabled: true,
+  splash: {
+    image: "./src/assets/splash.png",
+    resizeMode: "contain",
+    backgroundColor: "#101614",
+  },
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: "com.numnum.driver",
+  },
+  android: {
+    versionCode: 2,
+    adaptiveIcon: {
+      foregroundImage: "./src/assets/brand/adaptive-icon.png",
+      backgroundColor: "#101614",
+    },
+    package: "com.mynumnums_driver.app",
+    permissions: ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"],
+    ...(googleMapsApiKey ? { config: { googleMaps: { apiKey: googleMapsApiKey } } } : {}),
+  },
+  web: {
+    bundler: "metro",
+    favicon: "./src/assets/brand/icon.png",
+  },
+  plugins: ["expo-secure-store", "expo-location", "expo-web-browser"],
+  extra: {
+    eas: {
+      projectId: "0163ac7c-5d66-4124-a523-4205823e924a",
+    },
+  },
+  owner: "pushtech",
+};

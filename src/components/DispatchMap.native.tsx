@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, Polyline, type Region } from "react-native-maps";
 import { colors } from "@/ui/theme";
 
@@ -29,6 +29,19 @@ function regionFor(points: MapPoint[]): Region {
 export function DispatchMap({ pickup, dropoff, current, focus }: Props) {
   const points = [pickup, dropoff, current].filter(Boolean) as MapPoint[];
   const target = focus === "pickup" ? pickup : dropoff;
+
+  // Google Maps for Android is configured at build time. Avoid mounting the
+  // native map view in a preview build without that configuration, because it
+  // can terminate the app before the driver reaches their assigned work.
+  if (!process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY) {
+    return (
+      <View style={[styles.frame, styles.unavailable]}>
+        <Text style={styles.unavailableTitle}>Map unavailable on this device</Text>
+        <Text style={styles.unavailableCopy}>Your delivery details and navigation link are still available.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.frame}>
       <MapView style={styles.map} region={regionFor(target ? [target] : points)} mapType="standard" showsUserLocation>
@@ -43,4 +56,7 @@ export function DispatchMap({ pickup, dropoff, current, focus }: Props) {
 const styles = StyleSheet.create({
   frame: { overflow: "hidden", borderRadius: 12, borderWidth: 1, borderColor: colors.outline, backgroundColor: colors.surface },
   map: { height: 260, width: "100%" },
+  unavailable: { alignItems: "center", justifyContent: "center", height: 260, padding: 24 },
+  unavailableTitle: { color: colors.text, fontSize: 16, fontWeight: "700", textAlign: "center" },
+  unavailableCopy: { color: colors.textMuted, fontSize: 13, lineHeight: 19, marginTop: 8, textAlign: "center" },
 });
