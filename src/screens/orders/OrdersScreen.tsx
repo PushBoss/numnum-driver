@@ -14,14 +14,16 @@ export function OrdersScreen({ navigation }: Props) {
   const { driver } = useAuth();
   const [tasks, setTasks] = useState<DispatchTask[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!driver) return;
     setLoading(true);
+    setLoadError(null);
     try {
       setTasks(await fetchDriverTasks(driver.id));
     } catch (error) {
-      Alert.alert("Could not load deliveries", error instanceof Error ? error.message : "Try again.");
+      setLoadError(error instanceof Error ? error.message : "Try again.");
     } finally {
       setLoading(false);
     }
@@ -34,7 +36,11 @@ export function OrdersScreen({ navigation }: Props) {
       .channel(`driver-tasks:${driver.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "delivery_tasks", filter: `assigned_driver_profile_id=eq.${driver.id}` }, () => void refresh())
       .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    const fallbackPoll = setInterval(() => void refresh(), 20000);
+    return () => {
+      clearInterval(fallbackPoll);
+      void supabase.removeChannel(channel);
+    };
   }, [driver, refresh]);
 
   async function accept(task: DispatchTask) {
@@ -68,7 +74,13 @@ export function OrdersScreen({ navigation }: Props) {
             {item.status === "assigned" && <TouchableOpacity style={styles.button} onPress={() => void accept(item)}><Text style={styles.buttonText}>Accept job</Text></TouchableOpacity>}
           </TouchableOpacity>
         )}
-        ListEmptyComponent={<View style={styles.emptyPanel}><Text style={styles.emptyTitle}>No jobs assigned</Text><Text style={styles.empty}>Stay live and Fleet Control will route your next delivery here.</Text></View>}
+        ListEmptyComponent={<View style={styles.emptyPanel}>
+          <Text style={styles.emptyTitle}>{loadError ? "Could not load jobs" : "No jobs assigned"}</Text>
+          <Text style={styles.empty}>{loadError ?? "Stay online and ask Fleet Control to assign a job to your driver profile. New assignments appear here automatically."}</Text>
+          <TouchableOpacity accessibilityRole="button" style={styles.refreshButton} onPress={() => void refresh()} disabled={loading}>
+            <Text style={styles.refreshText}>{loading ? "Checking…" : "Refresh jobs"}</Text>
+          </TouchableOpacity>
+        </View>}
       />
       </View>
     </View>
@@ -76,5 +88,5 @@ export function OrdersScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.command }, container: { flex: 1, paddingHorizontal: 16, backgroundColor: colors.command }, header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 18 }, eyebrow: { color: colors.textMuted, fontWeight: "800", fontSize: 11, letterSpacing: 1.2 }, heading: { color: colors.text, fontSize: 22, fontWeight: "800", marginTop: 4 }, live: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: colors.greenDark, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 }, dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.green }, liveText: { color: colors.green, fontSize: 10, fontWeight: "900", letterSpacing: 1 }, card: { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.outline, padding: 18, marginBottom: 12 }, cardTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, badge: { color: colors.green, fontWeight: "900", fontSize: 10, letterSpacing: 1.1 }, payout: { color: colors.text, fontWeight: "800" }, title: { color: colors.text, fontSize: 20, fontWeight: "800", marginTop: 10 }, jobId: { color: colors.textMuted, fontSize: 10, fontWeight: "800", letterSpacing: 1, marginTop: 3, marginBottom: 15 }, route: { flexDirection: "row" }, routeLine: { width: 22, alignItems: "center", paddingTop: 4 }, pickupDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.green }, line: { width: 1, height: 32, backgroundColor: colors.outline }, dropoffDot: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: colors.blue }, routeText: { flex: 1, paddingLeft: 10 }, routeLabel: { color: colors.textMuted, fontSize: 10, fontWeight: "800", letterSpacing: 1 }, dropoffLabel: { marginTop: 10 }, text: { color: colors.text, fontSize: 14, marginTop: 3 }, meta: { color: colors.textMuted, fontSize: 12, marginTop: 15 }, button: { backgroundColor: colors.green, borderRadius: 8, alignItems: "center", padding: 14, marginTop: 16 }, buttonText: { color: colors.greenText, fontWeight: "900", fontSize: 15 }, emptyPanel: { alignItems: "center", paddingTop: 90, paddingHorizontal: 28 }, emptyTitle: { color: colors.text, fontSize: 18, fontWeight: "800", marginBottom: 8 }, empty: { color: colors.textMuted, textAlign: "center", lineHeight: 21 },
+  screen: { flex: 1, backgroundColor: colors.command }, container: { flex: 1, paddingHorizontal: 16, backgroundColor: colors.command }, header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 18 }, eyebrow: { color: colors.textMuted, fontWeight: "800", fontSize: 11, letterSpacing: 1.2 }, heading: { color: colors.text, fontSize: 22, fontWeight: "800", marginTop: 4 }, live: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: colors.greenDark, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 }, dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.green }, liveText: { color: colors.green, fontSize: 10, fontWeight: "900", letterSpacing: 1 }, card: { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.outline, padding: 18, marginBottom: 12 }, cardTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, badge: { color: colors.green, fontWeight: "900", fontSize: 10, letterSpacing: 1.1 }, payout: { color: colors.text, fontWeight: "800" }, title: { color: colors.text, fontSize: 20, fontWeight: "800", marginTop: 10 }, jobId: { color: colors.textMuted, fontSize: 10, fontWeight: "800", letterSpacing: 1, marginTop: 3, marginBottom: 15 }, route: { flexDirection: "row" }, routeLine: { width: 22, alignItems: "center", paddingTop: 4 }, pickupDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.green }, line: { width: 1, height: 32, backgroundColor: colors.outline }, dropoffDot: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: colors.blue }, routeText: { flex: 1, paddingLeft: 10 }, routeLabel: { color: colors.textMuted, fontSize: 10, fontWeight: "800", letterSpacing: 1 }, dropoffLabel: { marginTop: 10 }, text: { color: colors.text, fontSize: 14, marginTop: 3 }, meta: { color: colors.textMuted, fontSize: 12, marginTop: 15 }, button: { backgroundColor: colors.green, borderRadius: 8, alignItems: "center", padding: 14, marginTop: 16 }, buttonText: { color: colors.greenText, fontWeight: "900", fontSize: 15 }, emptyPanel: { alignItems: "center", paddingTop: 90, paddingHorizontal: 28 }, emptyTitle: { color: colors.text, fontSize: 18, fontWeight: "800", marginBottom: 8 }, empty: { color: colors.textMuted, textAlign: "center", lineHeight: 21 }, refreshButton: { minHeight: 44, justifyContent: "center", paddingHorizontal: 18, marginTop: 18, borderRadius: 8, backgroundColor: colors.green }, refreshText: { color: colors.greenText, fontWeight: "900", fontSize: 14 },
 });

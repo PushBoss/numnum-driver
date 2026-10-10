@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState, type ReactNode } from "react";
 import { AppState } from "react-native";
 import { supabase } from "@/services/supabase";
+import { validateDriverLogin } from "@/domain/driverLogin";
 import type { AuthState } from "@/types";
 
 interface AuthContextValue extends AuthState {
@@ -20,10 +21,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       else supabase.auth.stopAutoRefresh();
     });
 
-    void supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) void loadDriverProfile(session.user.id);
-      else setState({ isAuthenticated: false, isLoading: false, driver: null });
-    });
+    void supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (session?.user) void loadDriverProfile(session.user.id);
+        else setState({ isAuthenticated: false, isLoading: false, driver: null });
+      })
+      .catch((error: unknown) => {
+        console.error("Unable to restore NumNum Driver session", error);
+        setState({ isAuthenticated: false, isLoading: false, driver: null });
+      });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) void loadDriverProfile(session.user.id);
@@ -79,8 +85,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signIn(phone: string, password: string) {
+    const validationError = validateDriverLogin(phone, password);
+    if (validationError) throw new Error(validationError);
     const digits = phone.replace(/\D/g, "");
-    if (!digits) throw new Error("Enter the phone number assigned by your fleet manager.");
 
     // Fleet provisions driver accounts as email/password users because phone
     // password auth is not enabled in this Supabase project. Accept both the

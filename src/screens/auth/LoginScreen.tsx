@@ -52,10 +52,10 @@ export function LoginScreen() {
           style={webFormStyle}
         >
           <Text style={styles.formTitle}>Driver sign in</Text>
-          <Text style={styles.formHint}>Use the phone number and PIN provided by your fleet.</Text>
+          <Text style={styles.formHint}>Use your fleet-provided phone number and 6-8 digit PIN. Email sign-in is not supported.</Text>
           <input
             type="tel"
-            placeholder="Phone Number"
+            placeholder="Driver phone number"
             value={phone}
             onChange={(event) => setPhone(event.currentTarget.value)}
             style={webInputStyle}
@@ -90,10 +90,10 @@ export function LoginScreen() {
           <Text style={styles.description}>Sign in to accept deliveries, navigate to pickup, and complete every handoff.</Text>
           <View style={styles.nativeForm}>
           <Text style={styles.formTitle}>Driver sign in</Text>
-          <Text style={styles.formHint}>Use the phone number and PIN provided by your fleet.</Text>
+          <Text style={styles.formHint}>Use your fleet-provided phone number and 6-8 digit PIN. Email sign-in is not supported.</Text>
           <TextInput
             style={styles.input}
-            placeholder="Phone Number"
+            placeholder="Driver phone number"
             placeholderTextColor={colors.textMuted}
             value={phone}
             onChangeText={(value) => { setPhone(value); setErrorMessage(null); }}

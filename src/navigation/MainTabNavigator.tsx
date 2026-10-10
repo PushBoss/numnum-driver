@@ -6,6 +6,7 @@ import { ProfileScreen } from "@/screens/profile/ProfileScreen";
 import { colors } from "@/ui/theme";
 import { BrandMark } from "@/components/BrandMark";
 import { EarningsIcon, HomeIcon, JobsIcon, ProfileIcon } from "@/components/icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type MainTabParamList = {
   Dashboard: undefined;
@@ -17,6 +18,7 @@ export type MainTabParamList = {
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function MainTabNavigator() {
+  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -26,10 +28,16 @@ export function MainTabNavigator() {
         headerTitleStyle: { fontWeight: "800" },
         headerTitle: route.name === "Dashboard" ? () => <BrandMark size={28} /> : route.name,
         sceneStyle: { backgroundColor: colors.command },
-        tabBarStyle: { backgroundColor: colors.command, borderTopColor: "#263028", height: 70, paddingTop: 7 },
+        tabBarStyle: {
+          backgroundColor: colors.command,
+          borderTopColor: "#263028",
+          height: 58 + insets.bottom,
+          paddingTop: 7,
+          paddingBottom: Math.max(insets.bottom, 8),
+        },
         tabBarActiveTintColor: colors.green,
         tabBarInactiveTintColor: "#8f9a91",
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "800", marginBottom: 6 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "800", marginBottom: 2 },
         tabBarIcon: ({ color, size }) => {
           const Icon = route.name === "Dashboard" ? HomeIcon : route.name === "Orders" ? JobsIcon : route.name === "Earnings" ? EarningsIcon : ProfileIcon;
           return <Icon stroke={color} size={size} strokeWidth={2.4} />;

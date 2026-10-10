@@ -3,7 +3,7 @@ const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 module.exports = {
   name: "NumNum Driver",
   slug: "num-num-driver",
-  version: "1.0.0",
+  version: "1.0.2",
   description: "NumNum delivery driver app for accepting, navigating, and completing assigned deliveries.",
   orientation: "portrait",
   icon: "./src/assets/brand/icon.png",
@@ -19,10 +19,10 @@ module.exports = {
     bundleIdentifier: "com.numnum.driver",
   },
   android: {
-    versionCode: 3,
+    versionCode: 5,
     adaptiveIcon: {
       foregroundImage: "./src/assets/brand/adaptive-icon.png",
-      backgroundColor: "#101614",
+      backgroundColor: "#FFFFFF",
     },
     package: "com.mynumnums_driver.app",
     permissions: ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"],

@@ -2,12 +2,15 @@ import * as SecureStore from "expo-secure-store";
 import { createClient } from "@supabase/supabase-js";
 import type { SupportedStorage } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
+const configuredUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim() ?? "";
+const configuredAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY");
-}
+export const isSupabaseConfigured = Boolean(configuredUrl && configuredAnonKey);
+
+// Keep module import safe so an incorrectly configured store build can show a
+// recovery screen instead of terminating before React mounts.
+const supabaseUrl = configuredUrl || "https://configuration-missing.supabase.co";
+const supabaseAnonKey = configuredAnonKey || "configuration-missing";
 
 const secureStorage: SupportedStorage = {
   getItem: async (key) => {

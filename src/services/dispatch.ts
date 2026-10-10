@@ -6,7 +6,7 @@ export type DispatchTask = { id: string; orderId: string; jobId: string; status:
 export type DriverEarning = { id: string; amountCents: number; currencyCode: string; createdAt: string; paymentReference: string | null };
 export type DriverTrip = { id: string; orderNumber: string; pickupAddress: string; dropoffAddress: string; completedAt: string; durationMinutes: number; payoutCents: number; currencyCode: string; rating: number | null };
 
-type RawTask = { id: string; order_id: string; task_status: DispatchStatus; estimated_distance_meters: number | null; orders: { order_number: string; pickup_address: string | null; dropoff_address: string | null; pickup_location: string | null; dropoff_location: string | null; delivery_fee_cents: number; currency_code: string } | null };
+type RawTask = { id: string; order_id: string; task_status: DispatchStatus; estimated_distance_meters: number | null; orders: { order_number: string; pickup_address: string | null; dropoff_address: string | null; pickup_location: unknown; dropoff_location: unknown; delivery_fee_cents: number; currency_code: string } | null };
 type RawEarning = { id: string; amount_cents: number; currency_code: string; created_at: string; metadata: { payment_reference?: string } | null };
 type RawTrip = { id: string; created_at: string; updated_at: string; metadata: { driver_rating?: number; rating?: number } | null; route_events: { event_type: string; created_at: string }[] | null; orders: { order_number: string; pickup_address: string | null; dropoff_address: string | null; delivery_fee_cents: number; currency_code: string } | null };
 
@@ -16,17 +16,21 @@ export async function fetchDriverTasks(driverProfileId: string): Promise<Dispatc
   return ((data ?? []) as unknown as RawTask[]).map((task) => ({ id: task.id, orderId: task.order_id, jobId: `JOB-${task.id.slice(0, 8).toUpperCase()}`, status: task.task_status, orderNumber: task.orders?.order_number ?? "Delivery", pickupAddress: task.orders?.pickup_address ?? "Merchant location", dropoffAddress: task.orders?.dropoff_address ?? "Customer address", pickupCoordinates: parsePoint(task.orders?.pickup_location), dropoffCoordinates: parsePoint(task.orders?.dropoff_location), payoutCents: task.orders?.delivery_fee_cents ?? 0, distanceMeters: task.estimated_distance_meters, currencyCode: task.orders?.currency_code ?? "JMD" }));
 }
 
-function parsePoint(value: string | null | undefined): DispatchCoordinates | null {
-  const match = value?.match(/POINT\\((-?[\\d.]+)\\s+(-?[\\d.]+)\\)/i);
-  if (match) return { longitude: Number(match[1]), latitude: Number(match[2]) };
-  try {
-    const geoJson = JSON.parse(value ?? "") as { coordinates?: unknown };
-    if (Array.isArray(geoJson.coordinates) && geoJson.coordinates.length >= 2) {
-      const [longitude, latitude] = geoJson.coordinates.map(Number);
-      if (Number.isFinite(latitude) && Number.isFinite(longitude)) return { latitude, longitude };
+export function parsePoint(value: unknown): DispatchCoordinates | null {
+  let point: unknown = value;
+  if (typeof value === "string") {
+    const match = value.match(/^\s*POINT\s*\(\s*(-?(?:\d+(?:\.\d*)?|\.\d+))\s+(-?(?:\d+(?:\.\d*)?|\.\d+))\s*\)\s*$/i);
+    if (match) point = [match[1], match[2]];
+    else {
+      try { point = JSON.parse(value); } catch { return null; }
     }
-  } catch {
-    // Coordinates can be absent or supplied as PostGIS POINT text.
+  }
+  if (point && typeof point === "object" && "coordinates" in point) point = (point as { coordinates: unknown }).coordinates;
+  if (Array.isArray(point) && point.length >= 2) {
+    const [longitude, latitude] = point.map(Number);
+    if (Number.isFinite(latitude) && Number.isFinite(longitude) && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180) {
+      return { latitude, longitude };
+    }
   }
   return null;
 }
